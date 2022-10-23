@@ -1,11 +1,31 @@
 /*
 Test program to check connection and I2C protocol between ESP-01 and SHT21 temp and hum sensor.
+Test sending data in MQTT PROTOCOL
 */
 
 #include "Wire.h"
 #include "SHT2x.h"
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include "config.h"
+
+const char* ssid = SSID;
+const char* password = PASSWORD;
+const char* mqtt_server = MQTT_SERVER;
+const char* mqtt_topic = MQTT_TOPIC;
+const char* mqtt_username = MQTT_USERNAME;
+const char* mqtt_password = MQTT_PASSWORD;
+const char* clientID = CLIENT_ID;
 
 SHT2x sht;
+WiFiClient espClient;
+PubSubClient client(mqtt_server, 1883, espClient);
+
+unsigned long lastMsg = 0;
+#define MSG_BUFFER_SIZE	(100)
+char msg[MSG_BUFFER_SIZE];
+int value = 0;
+
 
 void setup()
 {
@@ -17,18 +37,66 @@ void setup()
   Serial.print(stat, HEX);
   Serial.println();
   delay(200);
+  con_wifi_mqtt();
 }
-
 
 void loop()
 {
+  client.loop();
+
   sht.read();
-  Serial.print("TEMP: ");
-  Serial.print(sht.getTemperature(), 1);
-  Serial.print("*C");
-  Serial.print("\t");
-  Serial.print("HUM: ");
-  Serial.print(sht.getHumidity(), 1);
-  Serial.println("%");
-  delay(2000);
+  float temp = sht.getTemperature();
+  float hum = sht.getHumidity();
+
+  unsigned long now = millis();
+  if (now - lastMsg > 10000) {
+
+    Serial.print("TEMP: ");
+    Serial.print(temp, 1);
+    Serial.print("*C");
+    Serial.print("\t");
+    Serial.print("HUM: ");
+    Serial.print(hum, 1);
+    Serial.println("%");
+    
+    lastMsg = now;
+    ++value;
+    snprintf (msg, MSG_BUFFER_SIZE, "%.2f, %.2f", temp, hum);
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+    client.publish(mqtt_topic, msg);
+    Serial.println("MSG PUBLISHED!");
+    delay(1000);
+  }
+}
+
+void con_wifi_mqtt() {
+
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  randomSeed(micros());
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (client.connect(clientID, mqtt_username, mqtt_password)) {
+    Serial.println("Connected to MQTT Broker!");
+  }
+  else {
+    Serial.println("Connection to MQTT Broker failed...");
+  }
 }
