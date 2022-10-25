@@ -1,14 +1,12 @@
 import paho.mqtt.client as mqtt
 import config
 
-# Don't forget to change the variables for the MQTT broker!
 mqtt_username = config.mqtt_username
 mqtt_password = config.mqtt_password
 mqtt_topic = config.mqtt_topic
 mqtt_broker_ip = config.mqtt_broker_ip
 
 client = mqtt.Client()
-# Set the username and password for the MQTT client
 client.username_pw_set(mqtt_username, mqtt_password)
 
 
@@ -28,6 +26,7 @@ def on_message(client, userdata, msg):
     # the content, the code to do this should be run in this function
 
     print("Topic: ", msg.topic + "\nMessage: " + str(msg.payload))
+
     print(msg.payload)
 
     # The message itself is stored in the msg variable

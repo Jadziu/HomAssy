@@ -44,12 +44,13 @@ void loop()
 {
   client.loop();
 
-  sht.read();
-  float temp = sht.getTemperature();
-  float hum = sht.getHumidity();
+
 
   unsigned long now = millis();
-  if (now - lastMsg > 10000) {
+  if (now - lastMsg > 14000) {
+    sht.read();
+    float temp = sht.getTemperature();
+    float hum = sht.getHumidity();
 
     Serial.print("TEMP: ");
     Serial.print(temp, 1);
@@ -62,18 +63,17 @@ void loop()
     lastMsg = now;
     ++value;
     snprintf (msg, MSG_BUFFER_SIZE, "%.2f, %.2f", temp, hum);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
+    delay(500);
     client.publish(mqtt_topic, msg);
-    Serial.println("MSG PUBLISHED!");
-    delay(1000);
+    Serial.print("MSG published to topic: ");
+    Serial.println(mqtt_topic);
+    delay(500);
   }
 }
 
 void con_wifi_mqtt() {
 
   delay(10);
-  // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
