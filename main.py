@@ -30,7 +30,7 @@ def mqtt_handler(q):
 
     def on_message(client, userdata, msg):
         timestamp = time.strftime("%H%M%S")
-        data = f"{timestamp} {msg.topic} {str(msg.payload)}"
+        data = f"{timestamp}'{msg.topic}'{str(msg.payload)}"
         q.put(data)
         # print(data)
 
@@ -44,7 +44,11 @@ def data_handler(q):
     print('alive')
     while True:
         msg = q.get()
-        print(msg)
+        msg2 = msg.split("'")
+        print(msg2)
+        th = msg2[3].split(",")
+        print(th[0])
+        print(th[1].strip())
 
 
 
