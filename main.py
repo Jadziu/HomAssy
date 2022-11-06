@@ -1,47 +1,60 @@
 import paho.mqtt.client as mqtt
 import config
+import time
+import multiprocessing
 
-mqtt_username = config.mqtt_username
-mqtt_password = config.mqtt_password
-mqtt_topic = config.mqtt_topic
-mqtt_broker_ip = config.mqtt_broker_ip
-
-client = mqtt.Client()
-client.username_pw_set(mqtt_username, mqtt_password)
+con1, con2 = multiprocessing.Pipe()
+q = multiprocessing.Queue()
 
 
-# These functions handle what happens when the MQTT client connects
-# to the broker, and what happens then the topic receives a message
-def on_connect(client, userdata, flags, rc):
-    # rc is the error code returned when connecting to the broker
-    print("Connected!", str(rc))
+def mqtt_handler(q):
+    mqtt_username = config.mqtt_username
+    mqtt_password = config.mqtt_password
+    mqtt_topic = config.mqtt_topic
+    mqtt_broker_ip = config.mqtt_broker_ip
+    client = mqtt.Client()
+    client.username_pw_set(mqtt_username, mqtt_password)
 
-    # Once the client has connected to the broker, subscribe to the topic
-    client.subscribe(mqtt_topic)
-
-
-def on_message(client, userdata, msg):
-    # This function is called everytime the topic is published to.
-    # If you want to check each message, and do something depending on
-    # the content, the code to do this should be run in this function
-
-    print("Topic: ", msg.topic + "\nMessage: " + str(msg.payload))
-
-    print(msg.payload)
-
-    # The message itself is stored in the msg variable
-    # and details about who sent it are stored in userdata
+    try:
+        client.connect(mqtt_broker_ip, 1883)
+        connection = True
+        print('Connected to broker')
+    except:
+        print('Broker not responding!!!')
+        connection = False
 
 
-# Here, we are telling the client which functions are to be run
-# on connecting, and on receiving a message
-client.on_connect = on_connect
-client.on_message = on_message
+    def on_connect(client, userdata, flags, rc):
+        print("Connected!", str(rc))
+        client.subscribe(mqtt_topic)
 
-# Once everything has been set up, we can (finally) connect to the broker
-# 1883 is the listener port that the MQTT broker is using
-client.connect(mqtt_broker_ip, 1883)
+    def on_message(client, userdata, msg):
+        timestamp = time.strftime("%H%M%S")
+        data = f"{timestamp} {msg.topic} {str(msg.payload)}"
+        q.put(data)
+        # print(data)
 
-# Once we have told the client to connect, let the client object run itself
-client.loop_forever()
-client.disconnect()
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.loop_forever()
+    client.disconnect()
+
+
+def data_handler(q):
+    print('alive')
+    while True:
+        msg = q.get()
+        print(msg)
+
+
+
+if __name__ == "__main__":
+
+    p1 = multiprocessing.Process(target=mqtt_handler, args=(q,))
+    p2 = multiprocessing.Process(target=data_handler, args=(q,))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+
+
