@@ -32,7 +32,12 @@ def mqtt_handler(q):
         timestamp = time.strftime("%H%M%S")
         data = f"{timestamp}'{msg.topic}'{str(msg.payload)}"
         q.put(data)
+        publish(client)
         # print(data)
+
+    def publish(client):
+        # ONLY FOR TEST
+        client.publish('control/ROOM2', '1')
 
     client.on_connect = on_connect
     client.on_message = on_message
@@ -53,7 +58,6 @@ def data_handler(q):
 
 
 if __name__ == "__main__":
-
     p1 = multiprocessing.Process(target=mqtt_handler, args=(q,))
     p2 = multiprocessing.Process(target=data_handler, args=(q,))
     p1.start()

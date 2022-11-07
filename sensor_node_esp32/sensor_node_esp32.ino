@@ -38,13 +38,14 @@ void setup()
   Serial.println();
   delay(200);
   con_wifi_mqtt();
+  delay(500);
+  client.setCallback(callback);
+  client.subscribe("control/+");  
 }
 
 void loop()
 {
   client.loop();
-
-
 
   unsigned long now = millis();
   if (now - lastMsg > 14000) {
@@ -69,6 +70,7 @@ void loop()
     Serial.println(mqtt_topic);
     delay(500);
   }
+  
 }
 
 void con_wifi_mqtt() {
@@ -93,10 +95,23 @@ void con_wifi_mqtt() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  if (client.connect(clientID, mqtt_username, mqtt_password)) {
-    Serial.println("Connected to MQTT Broker!");
+  while (!client.connected()){
+    Serial.println("Connecting to MQTT broker...");
+    client.connect(clientID, mqtt_username, mqtt_password);
+    if (!client.connected()){
+      Serial.println("Reconnecting in 5s. ...");
+      delay(5000);
+    }
   }
-  else {
-    Serial.println("Connection to MQTT Broker failed...");
+  Serial.print("Connected to MQTT broker.");
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i=0;i<length;i++) {
+    Serial.print((char)payload[i]);
   }
+  Serial.println();
 }
