@@ -40,7 +40,7 @@ void setup()
   con_wifi_mqtt();
   delay(500);
   client.setCallback(callback);
-  client.subscribe("control/+");  
+  client.subscribe("holiday");  
 }
 
 void loop()
