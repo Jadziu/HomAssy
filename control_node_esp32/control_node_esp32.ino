@@ -3,11 +3,10 @@ Test program to check connection and I2C protocol between ESP-01 and SHT21 temp 
 Test sending data in MQTT PROTOCOL
 */
 
-#include "Wire.h"
-#include "SHT2x.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "config.h"
+#define OUT 1
 
 const char* ssid = SSID;
 const char* password = PASSWORD;
@@ -16,8 +15,8 @@ const char* mqtt_topic = MQTT_TOPIC;
 const char* mqtt_username = MQTT_USERNAME;
 const char* mqtt_password = MQTT_PASSWORD;
 const char* clientID = CLIENT_ID;
+String control = "0";
 
-SHT2x sht;
 WiFiClient espClient;
 PubSubClient client(mqtt_server, 1883, espClient);
 
@@ -31,16 +30,13 @@ void setup()
 {
   Serial.begin(115200);
   delay(50);
-  sht.begin(2, 0);
-  delay(50);
-  uint8_t stat = sht.getStatus();
-  Serial.print(stat, HEX);
-  Serial.println();
-  delay(200);
   con_wifi_mqtt();
   delay(500);
   client.setCallback(callback);
-  client.subscribe("holiday");  
+  client.subscribe("heating/+");
+  pinMode(OUT, OUTPUT); 
+  delay(1000);
+  digitalWrite(OUT, LOW);
 }
 
 void loop()
@@ -48,24 +44,22 @@ void loop()
   client.loop();
 
   unsigned long now = millis();
-  if (now - lastMsg > 5000) {
-    sht.read();
-    float temp = sht.getTemperature();
-    float hum = sht.getHumidity();
-    if (hum >= 100){
-      hum = 100;
+  if (now - lastMsg > 10000) {
+    
+    if (control == "1"){
+      Serial.print("Heating ON");
+      digitalWrite(OUT, HIGH);
     }
-    Serial.print("TEMP: ");
-    Serial.print(temp, 1);
-    Serial.print("*C");
-    Serial.print("\t");
-    Serial.print("HUM: ");
-    Serial.print(hum, 1);
-    Serial.println("%");
+    else{
+      digitalWrite(OUT, LOW);
+      Serial.print("Heating OFF");
+    }
+
+
     
     lastMsg = now;
     ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "%.2f, %.2f", temp, hum);
+    snprintf (msg, MSG_BUFFER_SIZE, "PING");
     delay(500);
     client.publish(mqtt_topic, msg);
     Serial.print("MSG published to topic: ");
@@ -113,6 +107,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
   for (int i=0;i<length;i++) {
+    control = (char)payload[i];
     Serial.print((char)payload[i]);
   }
   Serial.println();
