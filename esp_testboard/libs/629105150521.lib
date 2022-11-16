@@ -1,0 +1,43 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# 629105150521
+#
+DEF 629105150521 J 0 40 Y Y 1 L N
+F0 "J" -5 332 50 H V L BNN
+F1 "629105150521" -199 -402 50 H V L BNN
+F2 "629105150521" 0 0 50 H I L BNN
+F3 "" 0 0 50 H I L BNN
+F4 "Type B" 0 0 50 H I L BNN "INTERFACE-TYPE"
+F5 "3.0A" 0 0 50 H I L BNN "IR"
+F6 "https://www.we-online.com/redexpert/spec/629105150521?ae" 0 0 50 H I L BNN "DATASHEET-URL"
+F7 "Receptacle" 0 0 50 H I L BNN "GERDER"
+F8 "629105150521" 0 0 50 H I L BNN "PART-NUMBER"
+F9 "5" 0 0 50 H I L BNN "PINS"
+F10 "Micro USB 2.0" 0 0 50 H I L BNN "APPLICATION"
+F11 "Horizontal" 0 0 50 H I L BNN "TYPE"
+F12 "Tape and Reel" 0 0 50 H I L BNN "PACKAGING"
+F13 "SMT" 0 0 50 H I L BNN "MOUNT"
+F14 "629105150521" 0 0 50 H I L BNN "VALUE"
+F15 "30V(AC)" 0 0 50 H I L BNN "WORKING-VOLTAGE"
+DRAW
+P 2 0 0 10 -200 275 175 275 N
+P 2 0 0 10 175 -275 -200 -275 N
+P 2 0 0 10 175 275 175 -275 N
+T 900 256 -33 40 0 0 0 shield Normal 0 L B
+S -267 -300 133 300 0 0 10 f
+X GND 5 -400 -200 200 R 40 40 0 0 P 
+X ID 4 -400 -100 200 R 40 40 0 0 P 
+X D+ 3 -400 0 200 R 40 40 0 0 P 
+X D- 2 -400 100 200 R 40 40 0 0 P 
+X VBUS 1 -400 200 200 R 40 40 0 0 P 
+X ~ S1 -400 -300 200 R 40 40 0 0 P 
+X ~ S2 -400 -300 200 R 40 40 0 0 P 
+X ~ S3 -400 -300 200 R 40 40 0 0 P 
+X ~ S4 -400 -300 200 R 40 40 0 0 P 
+ENDDRAW
+ENDDEF
+#
+# End Library
